@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DLVoiceLibrary.Core/DLVoiceLibrary.Core.csproj" />
+    <Project Path="src/DLVoiceLibrary.Scraping/DLVoiceLibrary.Scraping.csproj" />
+    <Project Path="src/DLVoiceLibrary/DLVoiceLibrary.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DLVoiceLibrary.Core.Tests/DLVoiceLibrary.Core.Tests.csproj" />
+    <Project Path="tests/DLVoiceLibrary.Scraping.Tests/DLVoiceLibrary.Scraping.Tests.csproj" />
+  </Folder>
+</Solution>

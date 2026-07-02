@@ -1,0 +1,61 @@
+<Window x:Class="DLVoiceLibrary.Views.PropertyDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="作品のプロパティ" Width="560" SizeToContent="Height" WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Style="{StaticResource {x:Type Window}}">
+    <Grid Margin="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="タイトル:" VerticalAlignment="Center" Margin="0,0,10,8" />
+        <TextBox x:Name="TitleBox" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" />
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="サークル:" VerticalAlignment="Center" Margin="0,0,10,8" />
+        <TextBox x:Name="CircleBox" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" />
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="作品ID:" VerticalAlignment="Center" Margin="0,0,10,8" />
+        <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,8">
+            <TextBox x:Name="ProductIdBox" Tag="RJ01234567" />
+            <TextBlock Text="※変更後に「🔄 再取得」を押すと、このIDでDLsiteからメタデータを取り直せます"
+                       Foreground="{StaticResource SubtextBrush}" FontSize="11" Margin="0,3,0,0" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="声優:" VerticalAlignment="Center" Margin="0,0,10,8" />
+        <TextBox x:Name="VoiceActorsBox" Grid.Row="3" Grid.Column="1" Margin="0,0,0,8" Tag="カンマ区切り: 天知遥, 恋羽もこ" />
+
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="ユーザータグ:" VerticalAlignment="Center" Margin="0,0,10,8" />
+        <StackPanel Grid.Row="4" Grid.Column="1" Margin="0,0,0,8">
+            <TextBox x:Name="UserTagsBox" Tag="カンマ区切り: お気に入り, 睡眠用" />
+            <TextBlock Text="※自分用のタグ。DLsite由来のジャンルとは別管理で、再取得しても消えません。検索・タグ絞り込みの対象になります"
+                       Foreground="{StaticResource SubtextBrush}" FontSize="11" Margin="0,3,0,0" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="5" Grid.Column="0" Text="メモ:" VerticalAlignment="Top" Margin="0,4,10,8" />
+        <TextBox x:Name="MemoBox" Grid.Row="5" Grid.Column="1" Margin="0,0,0,8"
+                 AcceptsReturn="True" TextWrapping="Wrap" Height="70" VerticalScrollBarVisibility="Auto"
+                 VerticalContentAlignment="Top" />
+
+        <TextBlock Grid.Row="6" Grid.Column="0" Text="フォルダ:" VerticalAlignment="Center" Margin="0,0,10,8" />
+        <TextBlock x:Name="FolderPathText" Grid.Row="6" Grid.Column="1" Margin="0,0,0,8"
+                   Foreground="{StaticResource SubtextBrush}" FontSize="11" TextWrapping="Wrap" />
+
+        <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button Content="キャンセル" Padding="12,6" Margin="0,0,8,0" Click="OnCancelClick" IsCancel="True" />
+            <Button Content="保存" Padding="16,6" Click="OnSaveClick" IsDefault="True" />
+        </StackPanel>
+    </Grid>
+</Window>

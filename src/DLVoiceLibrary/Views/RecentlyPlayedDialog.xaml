@@ -1,0 +1,28 @@
+<Window x:Class="DLVoiceLibrary.Views.RecentlyPlayedDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:DLVoiceLibrary.Core.Models;assembly=DLVoiceLibrary.Core"
+        Title="最近再生した項目" Width="420" Height="480" WindowStartupLocation="CenterOwner"
+        Style="{StaticResource {x:Type Window}}">
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="ダブルクリックで再生します" Margin="0,0,0,8" />
+
+        <ListBox x:Name="TracksListBox" Grid.Row="1" Background="{StaticResource MantleBrush}" BorderThickness="0"
+                 MouseDoubleClick="OnTrackDoubleClick">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:Track}">
+                    <StackPanel Margin="0,4">
+                        <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding WorkTitle}" Foreground="{StaticResource SubtextBrush}" FontSize="11"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>

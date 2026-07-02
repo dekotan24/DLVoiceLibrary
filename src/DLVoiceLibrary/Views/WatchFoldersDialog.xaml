@@ -1,0 +1,24 @@
+<Window x:Class="DLVoiceLibrary.Views.WatchFoldersDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="監視フォルダ設定" Width="600" Height="420" WindowStartupLocation="CenterOwner"
+        Style="{StaticResource {x:Type Window}}">
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Margin="0,0,0,8" TextWrapping="Wrap"
+                   Text="ここに登録したフォルダの直下にある作品フォルダは、アプリ起動時および実行中に自動で検出・登録されます。" />
+
+        <ListBox x:Name="FoldersListBox" Grid.Row="1" Background="{StaticResource MantleBrush}" BorderThickness="0" />
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="＋ フォルダを追加" Padding="10,6" Margin="0,0,8,0" Click="OnAddClick" />
+            <Button Content="削除" Padding="10,6" Margin="0,0,8,0" Click="OnRemoveClick" />
+            <Button Content="閉じる" Padding="16,6" Click="OnCloseClick" IsDefault="True" IsCancel="True" />
+        </StackPanel>
+    </Grid>
+</Window>

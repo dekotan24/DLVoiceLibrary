@@ -1,0 +1,17 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+[Pp]ublish/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Test / temporary artifacts
+TestResults/
+*.log
+
+# DLsite実ページのHTMLフィクスチャは公開リポに含めない
+# (作品説明文等の著作物を含むため。ローカルにある場合のみ該当テストが実行される)
+tests/DLVoiceLibrary.Scraping.Tests/Fixtures/RJ*.html

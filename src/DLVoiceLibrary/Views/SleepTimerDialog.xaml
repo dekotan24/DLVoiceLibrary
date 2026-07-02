@@ -1,0 +1,22 @@
+<Window x:Class="DLVoiceLibrary.Views.SleepTimerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="スリープタイマー" Width="320" SizeToContent="Height" WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Style="{StaticResource {x:Type Window}}">
+    <StackPanel Margin="16">
+        <TextBlock Text="指定した時間が経過するか、選択した曲の再生が終わったタイミングで自動的に一時停止します。" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+        <RadioButton x:Name="Minutes15" Content="15分後" GroupName="SleepOption" Margin="0,4" IsChecked="True" />
+        <RadioButton x:Name="Minutes30" Content="30分後" GroupName="SleepOption" Margin="0,4" />
+        <RadioButton x:Name="Minutes45" Content="45分後" GroupName="SleepOption" Margin="0,4" />
+        <RadioButton x:Name="Minutes60" Content="60分後" GroupName="SleepOption" Margin="0,4" />
+        <RadioButton x:Name="AtTrackEnd" Content="現在のトラックの再生が終わったら" GroupName="SleepOption" Margin="0,4" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="タイマーをオフにする" Padding="10,6" Margin="0,0,8,0" Click="OnCancelTimerClick" />
+            <Button Content="閉じる" Padding="12,6" Margin="0,0,8,0" Click="OnCloseClick" IsCancel="True" />
+            <Button Content="開始" Padding="16,6" Click="OnStartClick" IsDefault="True" />
+        </StackPanel>
+    </StackPanel>
+</Window>

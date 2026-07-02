@@ -1,0 +1,26 @@
+<Window x:Class="DLVoiceLibrary.Views.AddToPlaylistDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:DLVoiceLibrary.Core.Models;assembly=DLVoiceLibrary.Core"
+        Title="プレイリストに追加" Width="360" Height="420" WindowStartupLocation="CenterOwner"
+        Style="{StaticResource {x:Type Window}}">
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="追加先のプレイリストを選択してください" Margin="0,0,0,8" />
+
+        <ListBox x:Name="PlaylistListBox" Grid.Row="1" DisplayMemberPath="Name"
+                 Background="{StaticResource MantleBrush}" BorderThickness="0"
+                 MouseDoubleClick="OnPlaylistDoubleClick" />
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="新規作成して追加" Padding="10,6" Margin="0,0,8,0" Click="OnCreateNewClick" />
+            <Button Content="追加" Padding="16,6" Margin="0,0,8,0" Click="OnAddClick" IsDefault="True" />
+            <Button Content="キャンセル" Padding="12,6" Click="OnCancelClick" IsCancel="True" />
+        </StackPanel>
+    </Grid>
+</Window>
