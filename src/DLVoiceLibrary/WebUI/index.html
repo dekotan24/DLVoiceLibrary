@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#11111b">
+    <title>DLVoiceLibrary</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎧</text></svg>">
+</head>
+<body>
+    <!-- ログイン -->
+    <div id="loginOverlay" class="login-overlay hidden">
+        <form id="loginForm" class="login-card">
+            <div class="login-logo">🎧</div>
+            <h1>DLVoiceLibrary</h1>
+            <p class="login-sub">メディアサーバー</p>
+            <input type="text" id="loginUser" placeholder="ユーザー名" autocomplete="username" required>
+            <input type="password" id="loginPass" placeholder="パスワード" autocomplete="current-password" required>
+            <button type="submit">ログイン</button>
+            <div id="loginError" class="login-error"></div>
+        </form>
+    </div>
+
+    <div id="appShell" class="app-shell hidden">
+        <!-- サイドバー (PC) -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <span class="logo-icon">🎧</span>
+                <span class="logo-text">DLVoiceLibrary</span>
+            </div>
+            <a class="nav-item active" data-view="library"><span class="nav-icon">📚</span><span>ライブラリ</span></a>
+            <a class="nav-item" data-view="playlists"><span class="nav-icon">🎵</span><span>プレイリスト</span></a>
+            <a class="nav-item" data-view="favorites"><span class="nav-icon">⭐</span><span>お気に入り</span></a>
+            <a class="nav-item" data-view="recent"><span class="nav-icon">🕒</span><span>最近再生</span></a>
+            <div class="sidebar-footer">
+                <button class="btn-text" id="btnLogout">ログアウト</button>
+            </div>
+        </nav>
+
+        <!-- メイン -->
+        <main class="main" id="mainArea">
+            <header class="topbar">
+                <div class="topbar-title" id="viewTitle">ライブラリ</div>
+                <div class="topbar-controls" id="libraryControls">
+                    <input type="search" id="searchInput" placeholder="検索..." autocomplete="off">
+                    <select id="sortSelect">
+                        <option value="registered-desc">追加が新しい順</option>
+                        <option value="registered-asc">追加が古い順</option>
+                        <option value="release-desc">販売日が新しい順</option>
+                        <option value="release-asc">販売日が古い順</option>
+                        <option value="title-asc">タイトル順</option>
+                        <option value="circle-asc">サークル順</option>
+                        <option value="played-desc">最近再生した順</option>
+                    </select>
+                </div>
+            </header>
+            <div class="content" id="content"></div>
+        </main>
+
+        <!-- ミニプレーヤー (下部固定) -->
+        <div class="mini-player hidden" id="miniPlayer">
+            <div class="mini-progress"><div class="mini-progress-fill" id="miniProgressFill"></div></div>
+            <div class="mini-player-inner">
+                <img class="mini-thumb" id="miniThumb" alt="">
+                <div class="mini-info" id="miniInfo">
+                    <div class="mini-title" id="miniTitle">-</div>
+                    <div class="mini-sub" id="miniSub">-</div>
+                </div>
+                <div class="mini-controls">
+                    <button class="pbtn" id="miniPrev" title="前へ">⏮</button>
+                    <button class="pbtn pbtn-play" id="miniPlay" title="再生/一時停止">▶</button>
+                    <button class="pbtn" id="miniNext" title="次へ">⏭</button>
+                </div>
+                <div class="mini-extra">
+                    <span class="mini-time" id="miniTime">0:00 / 0:00</span>
+                    <button class="pbtn" id="miniExpand" title="拡大">⌃</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- モバイル下部タブ -->
+        <nav class="tabbar" id="tabbar">
+            <a class="tab-item active" data-view="library"><span>📚</span><label>ライブラリ</label></a>
+            <a class="tab-item" data-view="playlists"><span>🎵</span><label>リスト</label></a>
+            <a class="tab-item" data-view="favorites"><span>⭐</span><label>お気に入り</label></a>
+            <a class="tab-item" data-view="recent"><span>🕒</span><label>最近</label></a>
+        </nav>
+    </div>
+
+    <!-- 全画面 Now Playing -->
+    <div class="now-playing hidden" id="nowPlaying">
+        <div class="np-bg" id="npBg"></div>
+        <div class="np-content">
+            <button class="np-close" id="npClose">⌄</button>
+            <img class="np-thumb" id="npThumb" alt="">
+            <div class="np-title" id="npTitle">-</div>
+            <div class="np-sub" id="npSub">-</div>
+            <div class="np-seek">
+                <span class="np-time" id="npTimeCur">0:00</span>
+                <input type="range" id="npSeek" min="0" max="1000" value="0">
+                <span class="np-time" id="npTimeDur">0:00</span>
+            </div>
+            <div class="np-controls">
+                <button class="pbtn np-sec" id="npShuffle" title="シャッフル">🔀</button>
+                <button class="pbtn np-main" id="npPrev">⏮</button>
+                <button class="pbtn np-play" id="npPlay">▶</button>
+                <button class="pbtn np-main" id="npNext">⏭</button>
+                <button class="pbtn np-sec" id="npRepeat" title="リピート">🔁</button>
+            </div>
+            <div class="np-extras">
+                <button class="pbtn np-sec" id="npFav" title="お気に入り">☆</button>
+                <select id="npRate" title="再生速度">
+                    <option value="0.75">0.75x</option>
+                    <option value="1" selected>1.0x</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2.0x</option>
+                </select>
+                <div class="np-volume">
+                    🔊 <input type="range" id="npVolume" min="0" max="100" value="100">
+                </div>
+            </div>
+            <div class="np-queue" id="npQueue"></div>
+        </div>
+    </div>
+
+    <audio id="audio" preload="metadata"></audio>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/player.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

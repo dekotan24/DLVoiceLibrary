@@ -16,6 +16,8 @@ public interface IDatabaseService
 
     // Tracks
     Task<List<Track>> GetTracksByWorkIdAsync(long workId, CancellationToken ct = default);
+    /// <summary>作品IDごとのトラック数 (Webサーバの一覧APIで使用、N+1回避)</summary>
+    Task<Dictionary<long, int>> GetTrackCountsByWorkAsync(CancellationToken ct = default);
     Task<Track?> GetTrackByFilePathAsync(string filePath, CancellationToken ct = default);
     Task<Track?> GetTrackByIdAsync(long trackId, CancellationToken ct = default);
 

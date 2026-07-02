@@ -344,6 +344,20 @@ public sealed class SqliteDatabaseService : IDatabaseService
 
     // ---------- Tracks ----------
 
+    public async Task<Dictionary<long, int>> GetTrackCountsByWorkAsync(CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct);
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = "SELECT work_id, COUNT(*) FROM tracks GROUP BY work_id;";
+        var result = new Dictionary<long, int>();
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            result[reader.GetInt64(0)] = reader.GetInt32(1);
+        }
+        return result;
+    }
+
     public async Task<List<Track>> GetTracksByWorkIdAsync(long workId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct);

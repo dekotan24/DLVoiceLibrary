@@ -13,6 +13,65 @@
                    Foreground="{StaticResource SubtextBrush}"
                    Text="Boom3D等の仮想オーディオデバイスを通したい場合は、ここでそのデバイスを選択してください。「(システム既定)」はWindowsの既定の出力デバイスに従います。選択は即座に反映され、次回起動時も保持されます。" />
 
+        <Separator Margin="0,16,0,12" />
+
+        <TextBlock Text="Webメディアサーバ" FontWeight="Bold" FontSize="14" Margin="0,0,0,8" />
+        <TextBlock TextWrapping="Wrap" FontSize="11" Margin="0,0,0,10"
+                   Foreground="{StaticResource SubtextBrush}"
+                   Text="LAN内の他のPCやスマホのブラウザから、ライブラリの閲覧・再生ができます。" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="ポート:" VerticalAlignment="Center" Margin="0,0,0,8" />
+            <TextBox x:Name="PortBox" Grid.Column="1" Width="90" HorizontalAlignment="Left" Height="28" Margin="0,0,0,8" />
+
+            <TextBlock Grid.Row="1" Text="アクセス範囲:" VerticalAlignment="Center" Margin="0,0,0,8" />
+            <CheckBox x:Name="BindAllCheck" Grid.Row="1" Grid.Column="1" Content="LAN内の他デバイスからのアクセスを許可"
+                      VerticalAlignment="Center" Margin="0,0,0,8" />
+
+            <TextBlock Grid.Row="2" Text="ユーザー名:" VerticalAlignment="Center" Margin="0,0,0,8" />
+            <TextBox x:Name="UserBox" Grid.Row="2" Grid.Column="1" Width="180" HorizontalAlignment="Left" Height="28" Margin="0,0,0,8" />
+
+            <TextBlock Grid.Row="3" Text="パスワード:" VerticalAlignment="Center" Margin="0,0,0,8" />
+            <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+                <PasswordBox x:Name="PassBox" Width="180" Height="28" />
+                <TextBlock x:Name="PassHint" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="11"
+                           Foreground="{StaticResource SubtextBrush}" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="4" Text="自動開始:" VerticalAlignment="Center" />
+            <CheckBox x:Name="AutoStartCheck" Grid.Row="4" Grid.Column="1" Content="アプリ起動時にサーバを自動開始"
+                      VerticalAlignment="Center" />
+        </Grid>
+
+        <TextBlock TextWrapping="Wrap" FontSize="11" Margin="0,8,0,0"
+                   Foreground="{StaticResource SubtextBrush}"
+                   Text="※ パスワードを空にすると認証なしでアクセスできます。LAN公開時はパスワードの設定を推奨します。" />
+
+        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+            <Button x:Name="StartStopButton" Content="サーバを開始" Padding="16,6" Click="OnStartStopClick" />
+            <Button Content="設定を保存" Padding="16,6" Margin="8,0,0,0" Click="OnSaveWebSettingsClick" />
+        </StackPanel>
+
+        <StackPanel x:Name="UrlPanel" Orientation="Horizontal" Margin="0,10,0,0" Visibility="Collapsed">
+            <TextBlock Text="🟢 " VerticalAlignment="Center" />
+            <TextBlock x:Name="UrlText" VerticalAlignment="Center" Cursor="Hand"
+                       Foreground="{StaticResource AccentBrush}" TextDecorations="Underline"
+                       MouseLeftButtonUp="OnUrlClick" />
+            <Button Content="コピー" Padding="8,2" Margin="10,0,0,0" FontSize="11" Click="OnCopyUrlClick" />
+        </StackPanel>
+
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
             <Button Content="閉じる" Padding="16,6" Click="OnCloseClick" IsDefault="True" IsCancel="True" />
         </StackPanel>

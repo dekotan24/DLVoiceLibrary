@@ -19,6 +19,9 @@ public partial class App : Application
     public ILogService LogService { get; private set; } = null!;
     public IDatabaseService Database { get; private set; } = null!;
 
+    /// <summary>Webメディアサーバ (LAN内ブラウザ再生)。設定で自動開始、または設定画面から手動開始。</summary>
+    public Services.WebServerService WebServer { get; private set; } = null!;
+
     /// <summary>DLsiteスクレイピング・サムネイルDL共用のHttpClient。UA偽装+年齢確認Cookieを設定済み。</summary>
     public HttpClient DlsiteHttpClient { get; } = CreateDlsiteHttpClient();
 
@@ -58,9 +61,29 @@ public partial class App : Application
             return;
         }
 
+        WebServer = new Services.WebServerService(Database, LogService);
+        if (WebServer.Settings.AutoStart)
+        {
+            try
+            {
+                await WebServer.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                // ポート使用中等。起動は続行し、設定画面から再試行できる
+                LogService.Error("Web server auto-start failed.", ex);
+            }
+        }
+
         var mainWindow = new MainWindow();
         MainWindow = mainWindow;
         mainWindow.Show();
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        try { WebServer?.StopAsync().Wait(3000); } catch { }
+        base.OnExit(e);
     }
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
