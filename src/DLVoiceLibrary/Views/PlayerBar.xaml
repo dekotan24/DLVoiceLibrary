@@ -23,7 +23,7 @@
             BorderThickness="0,1,0,0" Padding="10,8">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="290" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="360" />
             </Grid.ColumnDefinitions>
@@ -42,31 +42,37 @@
                 </Border>
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="{Binding CurrentTrack.Title}" FontWeight="SemiBold" FontSize="12"
-                               TextTrimming="CharacterEllipsis" MaxWidth="170" />
+                               TextTrimming="CharacterEllipsis" MaxWidth="220" />
                     <TextBlock Text="{Binding CurrentWorkTitle}" Foreground="{StaticResource SubtextBrush}" FontSize="11"
-                               TextTrimming="CharacterEllipsis" MaxWidth="170" />
+                               TextTrimming="CharacterEllipsis" MaxWidth="220" />
                 </StackPanel>
             </StackPanel>
 
             <!-- 中央: 再生コントロール + シークバー -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,4">
-                    <Button Content="⏮" Width="34" Command="{Binding PreviousCommand}" />
+                    <Button Content="⏮" Width="42" Command="{Binding PreviousCommand}" />
                     <Button Content="{Binding IsPlaying, Converter={StaticResource PlayPauseIconConverter}}"
-                            Width="40" Margin="6,0" Command="{Binding TogglePlayPauseCommand}" />
-                    <Button Content="⏭" Width="34" Command="{Binding NextCommand}" />
+                            Width="46" Margin="6,0" Command="{Binding TogglePlayPauseCommand}" />
+                    <Button Content="⏭" Width="42" Command="{Binding NextCommand}" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal">
+                <!-- シークバーは中央カラムの余白いっぱいに伸ばす (固定幅だと広いウィンドウで余白が無駄になる) -->
+                <Grid Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding Position, Converter={StaticResource DurationToStringConverter}}"
                                Width="42" TextAlignment="Right" FontSize="11" Foreground="{StaticResource SubtextBrush}"
                                VerticalAlignment="Center" />
-                    <Slider x:Name="SeekSlider" Minimum="0" Maximum="{Binding Duration.TotalSeconds}"
-                            Width="Auto" MinWidth="300" VerticalAlignment="Center" Margin="6,0"
+                    <Slider x:Name="SeekSlider" Grid.Column="1" Minimum="0" Maximum="{Binding Duration.TotalSeconds}"
+                            MinWidth="300" VerticalAlignment="Center" Margin="6,0"
                             PreviewMouseDown="OnSeekSliderPreviewMouseDown" PreviewMouseUp="OnSeekSliderPreviewMouseUp" />
-                    <TextBlock Text="{Binding Duration, Converter={StaticResource DurationToStringConverter}}"
+                    <TextBlock Grid.Column="2" Text="{Binding Duration, Converter={StaticResource DurationToStringConverter}}"
                                Width="42" FontSize="11" Foreground="{StaticResource SubtextBrush}"
                                VerticalAlignment="Center" />
-                </StackPanel>
+                </Grid>
             </StackPanel>
 
             <!-- 右: お気に入り/スリープタイマー/リピート/シャッフル/音量/速度 -->
