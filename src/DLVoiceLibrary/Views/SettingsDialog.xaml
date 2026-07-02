@@ -34,18 +34,18 @@
             </Grid.RowDefinitions>
 
             <TextBlock Text="ポート:" VerticalAlignment="Center" Margin="0,0,0,8" />
-            <TextBox x:Name="PortBox" Grid.Column="1" Width="90" HorizontalAlignment="Left" Height="28" Margin="0,0,0,8" />
+            <TextBox x:Name="PortBox" Grid.Column="1" Width="90" HorizontalAlignment="Left" Margin="0,0,0,8" />
 
             <TextBlock Grid.Row="1" Text="アクセス範囲:" VerticalAlignment="Center" Margin="0,0,0,8" />
             <CheckBox x:Name="BindAllCheck" Grid.Row="1" Grid.Column="1" Content="LAN内の他デバイスからのアクセスを許可"
                       VerticalAlignment="Center" Margin="0,0,0,8" />
 
             <TextBlock Grid.Row="2" Text="ユーザー名:" VerticalAlignment="Center" Margin="0,0,0,8" />
-            <TextBox x:Name="UserBox" Grid.Row="2" Grid.Column="1" Width="180" HorizontalAlignment="Left" Height="28" Margin="0,0,0,8" />
+            <TextBox x:Name="UserBox" Grid.Row="2" Grid.Column="1" Width="180" HorizontalAlignment="Left" Margin="0,0,0,8" />
 
             <TextBlock Grid.Row="3" Text="パスワード:" VerticalAlignment="Center" Margin="0,0,0,8" />
             <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
-                <PasswordBox x:Name="PassBox" Width="180" Height="28" />
+                <PasswordBox x:Name="PassBox" Width="180" />
                 <TextBlock x:Name="PassHint" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="11"
                            Foreground="{StaticResource SubtextBrush}" />
             </StackPanel>

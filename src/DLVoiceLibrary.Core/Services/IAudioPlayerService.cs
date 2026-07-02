@@ -1,7 +1,12 @@
 namespace DLVoiceLibrary.Core.Services;
 
 /// <summary>音声出力デバイス。Idは再生エンジン固有の識別子(空文字=システム既定)。</summary>
-public sealed record AudioOutputDevice(string Id, string Name);
+public sealed record AudioOutputDevice(string Id, string Name)
+{
+    // ComboBox の選択ボックス表示は DisplayMemberPath が効かないテンプレート経路を通ることが
+    // あるため、ToString で表示名を返す
+    public override string ToString() => Name;
+}
 
 /// <summary>音声再生エンジンの抽象化。実装(LibVLC等)はWPFアプリ側に置き、Coreはネイティブ依存を持たない。</summary>
 public interface IAudioPlayerService : IDisposable
