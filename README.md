@@ -1,4 +1,4 @@
-# <img width="32" height="32" alt="app" src="https://github.com/user-attachments/assets/f49d3098-bee0-40a6-b7cb-3c8f96162051" />DLVoiceLibrary
+# <img width="32" height="32" alt="app" src="https://github.com/user-attachments/assets/f49d3098-bee0-40a6-b7cb-3c8f96162051" /> DLVoiceLibrary
 
 音声作品(ボイスドラマ・ASMR等)に特化したライブラリ管理+ミュージックプレーヤー。
 [DLGameManager](https://github.com/dekotan24/DLGameManager) の音声作品版で、exe起動の代わりにアプリ内再生機能を中核に据えています。
