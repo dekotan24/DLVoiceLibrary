@@ -3,6 +3,8 @@
 音声作品(ボイスドラマ・ASMR等)に特化したライブラリ管理+ミュージックプレーヤー。
 [DLGameManager](https://github.com/dekotan24/DLGameManager) の音声作品版で、exe起動の代わりにアプリ内再生機能を中核に据えています。
 
+<img width="1266" height="813" alt="2026-07-06_01h18_53" src="https://github.com/user-attachments/assets/ab4e8847-b5ea-4064-983f-17cfadfac2f9" />
+
 ## 主な機能
 
 ### ライブラリ管理
