@@ -46,11 +46,16 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ShowBrowserTab() => CurrentTab = MainTab.Browser;
 
-    /// <summary>選択中の作品のDLsite商品ページURL。作品IDが無い場合はnull。</summary>
+    /// <summary>選択中の作品のDLsite/FANZA商品ページURL。作品IDが無い場合はnull。</summary>
     public string? GetSelectedWorkDlsiteUrl()
     {
         var work = Library.WorkDetail.Work;
         if (work is null || string.IsNullOrEmpty(work.ProductId)) return null;
+
+        if (work.ProductId.StartsWith("d_", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"https://www.dmm.co.jp/dc/doujin/-/detail/=/cid={work.ProductId}/";
+        }
 
         var path = work.ProductId.StartsWith("VJ", StringComparison.OrdinalIgnoreCase) ? "pro" : "maniax";
         return $"https://www.dlsite.com/{path}/work/=/product_id/{work.ProductId}.html";

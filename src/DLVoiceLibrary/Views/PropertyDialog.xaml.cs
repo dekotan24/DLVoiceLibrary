@@ -34,7 +34,10 @@ public partial class PropertyDialog : Window
 
     private async void OnSaveClick(object sender, RoutedEventArgs e)
     {
-        var newProductId = ProductIdBox.Text.Trim().ToUpperInvariant();
+        var rawProductId = ProductIdBox.Text.Trim();
+        // FANZAのcid(d_123456)は小文字が正式表記のため大文字化しない
+        var isFanzaId = rawProductId.StartsWith("d_", StringComparison.OrdinalIgnoreCase);
+        var newProductId = isFanzaId ? "d_" + rawProductId.Substring(2) : rawProductId.ToUpperInvariant();
 
         _work.Title = TitleBox.Text.Trim();
         _work.CircleName = CircleBox.Text.Trim();
@@ -45,10 +48,10 @@ public partial class PropertyDialog : Window
         if (_work.ProductId != newProductId)
         {
             _work.ProductId = newProductId;
-            // 作品IDが手動で設定されたらDLsite作品として扱い、再取得を可能にする
+            // 作品IDが手動で設定されたらDLsite/FANZA作品として扱い、再取得を可能にする
             if (!string.IsNullOrEmpty(newProductId))
             {
-                _work.Source = "DLsite";
+                _work.Source = isFanzaId ? "FANZA" : "DLsite";
             }
         }
 

@@ -448,7 +448,7 @@ public partial class LibraryViewModel : ObservableObject
     public void EnqueuePendingMetadataFetches()
     {
         var pending = Works
-            .Where(w => w.Source == "DLsite"
+            .Where(w => (w.Source == "DLsite" || w.Source == "FANZA")
                 && !string.IsNullOrEmpty(w.ProductId)
                 && (string.IsNullOrEmpty(w.CircleName) || string.IsNullOrEmpty(w.ThumbnailPath)))
             .ToList();
@@ -462,11 +462,11 @@ public partial class LibraryViewModel : ObservableObject
         _log.Info($"メタデータ未取得の{pending.Count}件を取得キューに再投入");
     }
 
-    /// <summary>DLsiteの作品IDが判明している作品をバックグラウンドのメタデータ取得キューに投入する。
+    /// <summary>DLsite/FANZAの作品IDが判明している作品をバックグラウンドのメタデータ取得キューに投入する。
     /// サイト負荷軽減のため2秒間隔で1件ずつ順次処理する。</summary>
     private void EnqueueMetadataFetch(VoiceWork work)
     {
-        if (string.IsNullOrEmpty(work.ProductId) || work.Source != "DLsite") return;
+        if (string.IsNullOrEmpty(work.ProductId) || (work.Source != "DLsite" && work.Source != "FANZA")) return;
 
         _metadataQueue.Enqueue(work);
         MetadataQueueCount = _metadataQueue.Count;

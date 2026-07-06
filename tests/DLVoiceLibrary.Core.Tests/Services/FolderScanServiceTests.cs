@@ -64,6 +64,29 @@ public sealed class FolderScanServiceTests : IDisposable
         Assert.Null(result);
     }
 
+    [Theory]
+    [InlineData("[d_750863] [サークル名] タイトル", "d_750863")]
+    [InlineData("d_123456", "d_123456")]
+    [InlineData("D_750863 大文字表記でも小文字に正規化", "d_750863")]
+    public void ExtractProductId_FanzaCid_ExtractsIdAsFanza(string folderName, string expectedId)
+    {
+        var result = _sut.ExtractProductId(folderName);
+
+        Assert.NotNull(result);
+        Assert.Equal(expectedId, result!.ProductId);
+        Assert.Equal("FANZA", result.Source);
+    }
+
+    [Fact]
+    public void ExtractProductId_BothDlsiteAndFanzaId_PrefersDlsite()
+    {
+        var result = _sut.ExtractProductId("[RJ01005349] d_750863 混在フォルダ名");
+
+        Assert.NotNull(result);
+        Assert.Equal("RJ01005349", result!.ProductId);
+        Assert.Equal("DLsite", result.Source);
+    }
+
     // ---------- 自然順ソート ----------
 
     [Fact]

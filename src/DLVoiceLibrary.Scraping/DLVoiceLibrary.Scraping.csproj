@@ -2,9 +2,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DLVoiceLibrary.Core\DLVoiceLibrary.Core.csproj" />
+    <ProjectReference Include="..\..\..\DLsiteInfoGetter\DLsiteInfoGetter\DLsiteInfoGetter.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- DLsiteInfoGetterのFanzaInfoが使用する(1.0系ビルドのライブラリと1.5系の同居は検証済み) -->
     <PackageReference Include="AngleSharp" Version="1.5.1" />
   </ItemGroup>
 

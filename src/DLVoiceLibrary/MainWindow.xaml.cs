@@ -27,7 +27,7 @@ public partial class MainWindow : Window
         var app = (App)Application.Current;
         var tagReader = new TagLibTagReaderService();
         var folderScan = new FolderScanService(tagReader);
-        var scraper = new DlsiteScraperService(app.DlsiteHttpClient);
+        var scraper = new DlsiteScraperService();
         var folderWatch = new FolderWatchService();
         var library = new LibraryViewModel(app.Database, folderScan, scraper, folderWatch, app.DlsiteHttpClient, app.LogService);
         var playlists = new PlaylistsViewModel(app.Database, app.LogService);

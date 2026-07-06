@@ -16,12 +16,19 @@ public sealed partial class FolderScanService : IFolderScanService
     public ProductIdMatch? ExtractProductId(string folderName)
     {
         var match = ProductIdRegex().Match(folderName);
-        if (!match.Success)
+        if (match.Success)
         {
-            return null;
+            return new ProductIdMatch(match.Value.ToUpperInvariant(), "DLsite");
         }
 
-        return new ProductIdMatch(match.Value.ToUpperInvariant(), "DLsite");
+        // FANZA同人のcid(d_123456形式)。cidは小文字が正式表記のため大文字化しない
+        var fanzaMatch = FanzaIdRegex().Match(folderName);
+        if (fanzaMatch.Success)
+        {
+            return new ProductIdMatch("d_" + fanzaMatch.Groups[1].Value, "FANZA");
+        }
+
+        return null;
     }
 
     public List<ScannedTrack> ScanTracks(string workFolderPath)
@@ -69,6 +76,9 @@ public sealed partial class FolderScanService : IFolderScanService
 
     [GeneratedRegex(@"(RJ|VJ|BJ|RG|RE)(\d{6,8})", RegexOptions.IgnoreCase)]
     private static partial Regex ProductIdRegex();
+
+    [GeneratedRegex(@"d_(\d+)", RegexOptions.IgnoreCase)]
+    private static partial Regex FanzaIdRegex();
 
     private sealed class NaturalSortComparer : IComparer<string>
     {
