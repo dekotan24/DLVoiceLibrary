@@ -17,11 +17,13 @@ public sealed class DlsiteScraperService : IDlsiteScraperService
             if (IsFanzaId(productId))
             {
                 var fanza = await Task.Run(() => FanzaInfo.GetInfo(productId), ct).ConfigureAwait(false);
-                return ToMetadata(fanza.Title, fanza.Circle, fanza.ImageUrl, fanza.VoiceActor, fanza.Genre, fanza.SellDate);
+                return ToMetadata(fanza.Title, fanza.Circle, fanza.ImageUrl, fanza.VoiceActor, fanza.Genre,
+                    fanza.HasSellDate ? fanza.SellDate : null);
             }
 
             var dlsite = await Task.Run(() => DLsiteInfo.GetInfo(productId), ct).ConfigureAwait(false);
-            return ToMetadata(dlsite.Title, dlsite.Circle, dlsite.ImageUrl, dlsite.VoiceActor, dlsite.Genre, dlsite.SellDate);
+            return ToMetadata(dlsite.Title, dlsite.Circle, dlsite.ImageUrl, dlsite.VoiceActor, dlsite.Genre,
+                dlsite.HasSellDate ? dlsite.SellDate : null);
         }
         catch
         {
@@ -36,7 +38,7 @@ public sealed class DlsiteScraperService : IDlsiteScraperService
 
     private static DlsiteWorkMetadata? ToMetadata(
         string title, string circle, string imageUrl,
-        IReadOnlyList<string> voiceActors, IReadOnlyList<string> genres, DateTime sellDate)
+        IReadOnlyList<string> voiceActors, IReadOnlyList<string> genres, DateTime? sellDate)
     {
         // タイトルが取れていない場合は取得失敗として扱う(旧実装のParseHtmlと同じ契約)
         if (string.IsNullOrEmpty(title))

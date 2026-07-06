@@ -87,6 +87,18 @@ public sealed class FolderScanServiceTests : IDisposable
         Assert.Equal("DLsite", result.Source);
     }
 
+    [Theory]
+    [InlineData("sound_01 効果音集")]
+    [InlineData("hd_1080p 動画フォルダ")]
+    [InlineData("bgm_02")]
+    public void ExtractProductId_AlphanumericPrefixBeforeDUnderscore_ReturnsNull(string folderName)
+    {
+        // 「英数字 + d_数字」の部分文字列をFANZAのcidと誤認しないこと
+        var result = _sut.ExtractProductId(folderName);
+
+        Assert.Null(result);
+    }
+
     // ---------- 自然順ソート ----------
 
     [Fact]

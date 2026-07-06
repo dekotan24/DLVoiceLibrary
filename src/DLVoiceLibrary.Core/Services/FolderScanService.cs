@@ -77,7 +77,8 @@ public sealed partial class FolderScanService : IFolderScanService
     [GeneratedRegex(@"(RJ|VJ|BJ|RG|RE)(\d{6,8})", RegexOptions.IgnoreCase)]
     private static partial Regex ProductIdRegex();
 
-    [GeneratedRegex(@"d_(\d+)", RegexOptions.IgnoreCase)]
+    // 「sound_01」「hd_1080p」等の英数字+「d_数字」への誤マッチを防ぐため、直前が英数字の場合は除外する
+    [GeneratedRegex(@"(?<![a-zA-Z0-9])d_(\d+)", RegexOptions.IgnoreCase)]
     private static partial Regex FanzaIdRegex();
 
     private sealed class NaturalSortComparer : IComparer<string>
