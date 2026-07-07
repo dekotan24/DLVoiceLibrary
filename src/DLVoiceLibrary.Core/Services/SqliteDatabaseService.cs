@@ -103,6 +103,12 @@ public sealed class SqliteDatabaseService : IDatabaseService
         );
         ALTER TABLE voice_works ADD COLUMN user_tags TEXT NOT NULL DEFAULT '';
         ALTER TABLE app_state ADD COLUMN audio_device_id TEXT NOT NULL DEFAULT '';
+        """,
+
+        // v3: 作品単位のお気に入り(トラック単位のtracks.is_favoriteとは独立)
+        """
+        ALTER TABLE voice_works ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0;
+        CREATE INDEX idx_voice_works_favorite ON voice_works(is_favorite);
         """
     ];
 
@@ -216,14 +222,17 @@ public sealed class SqliteDatabaseService : IDatabaseService
             INSERT INTO voice_works
                 (product_id, source, title, circle_name, voice_actors, genre_tags, release_date,
                  folder_path, thumbnail_path, thumbnail_url, registered_at, last_played_at,
-                 play_count, rating, memo, user_tags)
+                 play_count, rating, memo, user_tags, is_favorite)
             VALUES
                 (@productId, @source, @title, @circleName, @voiceActors, @genreTags, @releaseDate,
                  @folderPath, @thumbnailPath, @thumbnailUrl, @registeredAt, @lastPlayedAt,
-                 @playCount, @rating, @memo, @userTags);
+                 @playCount, @rating, @memo, @userTags, @isFavorite);
             SELECT last_insert_rowid();
             """;
         BindWorkParameters(cmd, work);
+        // is_favoriteはUpdateWorkAsync(メタデータ全項目更新)の対象外。
+        // SetWorkFavoriteAsync専用にすることで、メタデータ取得中のトグル操作が古い値で巻き戻されるレース窓をなくす
+        cmd.Parameters.AddWithValue("@isFavorite", work.IsFavorite ? 1 : 0);
         var id = (long)(await cmd.ExecuteScalarAsync(ct))!;
         work.Id = id;
         return id;
@@ -252,6 +261,16 @@ public sealed class SqliteDatabaseService : IDatabaseService
         await using var connection = await OpenConnectionAsync(ct);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = "DELETE FROM voice_works WHERE id = @id;";
+        cmd.Parameters.AddWithValue("@id", workId);
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    public async Task SetWorkFavoriteAsync(long workId, bool isFavorite, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct);
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = "UPDATE voice_works SET is_favorite = @isFavorite WHERE id = @id;";
+        cmd.Parameters.AddWithValue("@isFavorite", isFavorite ? 1 : 0);
         cmd.Parameters.AddWithValue("@id", workId);
         await cmd.ExecuteNonQueryAsync(ct);
     }
@@ -332,7 +351,8 @@ public sealed class SqliteDatabaseService : IDatabaseService
         PlayCount = reader.GetInt32(reader.GetOrdinal("play_count")),
         Rating = reader.GetInt32(reader.GetOrdinal("rating")),
         Memo = reader.GetString(reader.GetOrdinal("memo")),
-        UserTags = reader.GetString(reader.GetOrdinal("user_tags"))
+        UserTags = reader.GetString(reader.GetOrdinal("user_tags")),
+        IsFavorite = reader.GetInt32(reader.GetOrdinal("is_favorite")) != 0
     };
 
     private static DateTime? ReadNullableDate(SqliteDataReader reader, string column)

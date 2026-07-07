@@ -57,6 +57,10 @@ public partial class VoiceWork : ObservableObject
     [ObservableProperty]
     private string _userTags = string.Empty;
 
+    /// <summary>作品単位のお気に入り。トラック単位のTrack.IsFavoriteとは独立。</summary>
+    [ObservableProperty]
+    private bool _isFavorite;
+
     public ObservableCollection<Track> Tracks { get; } = new();
 
     public IEnumerable<string> VoiceActorList =>
@@ -64,4 +68,8 @@ public partial class VoiceWork : ObservableObject
 
     public IEnumerable<string> GenreTagList =>
         GenreTags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    // メタデータ再取得で元のCSVが変わったとき、リスト表示(ItemsControl)側にも変更を伝える
+    partial void OnVoiceActorsChanged(string value) => OnPropertyChanged(nameof(VoiceActorList));
+    partial void OnGenreTagsChanged(string value) => OnPropertyChanged(nameof(GenreTagList));
 }

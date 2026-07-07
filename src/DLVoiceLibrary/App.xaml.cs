@@ -22,7 +22,8 @@ public partial class App : Application
     /// <summary>Webメディアサーバ (LAN内ブラウザ再生)。設定で自動開始、または設定画面から手動開始。</summary>
     public Services.WebServerService WebServer { get; private set; } = null!;
 
-    /// <summary>DLsiteスクレイピング・サムネイルDL共用のHttpClient。UA偽装+年齢確認Cookieを設定済み。</summary>
+    /// <summary>サムネイルDL用のHttpClient。UA偽装+年齢確認Cookieを設定済み。
+    /// (メタデータ取得はDLsiteInfoGetterに統合したため、スクレイピングでは使用しない)</summary>
     public HttpClient DlsiteHttpClient { get; } = CreateDlsiteHttpClient();
 
     private static HttpClient CreateDlsiteHttpClient()

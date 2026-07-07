@@ -127,17 +127,18 @@ public partial class LibraryViewModel : ObservableObject
 
     public ObservableCollection<GenreFilterItem> GenreFilters { get; } = new();
     public ObservableCollection<string> CircleOptions { get; } = new();
-    public ObservableCollection<string> VoiceActorOptions { get; } = new();
+    public ObservableCollection<GenreFilterItem> VoiceActorFilters { get; } = new();
 
     [ObservableProperty]
     private string _selectedCircle = NoSelection;
 
     partial void OnSelectedCircleChanged(string value) => RefreshFilter();
 
+    /// <summary>お気に入り(★)を付けた作品のみ表示する。</summary>
     [ObservableProperty]
-    private string _selectedVoiceActor = NoSelection;
+    private bool _favoritesOnly;
 
-    partial void OnSelectedVoiceActorChanged(string value) => RefreshFilter();
+    partial void OnFavoritesOnlyChanged(bool value) => WorksView.Refresh();
 
     [ObservableProperty]
     private string _releaseDateFromText = string.Empty;
@@ -151,12 +152,14 @@ public partial class LibraryViewModel : ObservableObject
 
     // FilterPredicateは作品ごとに呼ばれるため、選択状態はRefresh前に一度だけ集計してキャッシュする
     private List<string> _activeGenres = [];
+    private List<string> _activeVoiceActors = [];
     private DateTime? _releaseFrom;
     private DateTime? _releaseTo;
 
     private void RefreshFilter()
     {
         _activeGenres = GenreFilters.Where(g => g.IsSelected).Select(g => g.Name).ToList();
+        _activeVoiceActors = VoiceActorFilters.Where(v => v.IsSelected).Select(v => v.Name).ToList();
         _releaseFrom = DateTime.TryParse(ReleaseDateFromText, out var from) ? from : null;
         _releaseTo = DateTime.TryParse(ReleaseDateToText, out var to) ? to : null;
         WorksView.Refresh();
@@ -169,8 +172,11 @@ public partial class LibraryViewModel : ObservableObject
         {
             genre.IsSelected = false;
         }
+        foreach (var actor in VoiceActorFilters)
+        {
+            actor.IsSelected = false;
+        }
         SelectedCircle = NoSelection;
-        SelectedVoiceActor = NoSelection;
         ReleaseDateFromText = string.Empty;
         ReleaseDateToText = string.Empty;
         RefreshFilter();
@@ -180,26 +186,29 @@ public partial class LibraryViewModel : ObservableObject
     /// メタデータ取得の進行で増えるため、パネルを開くたびに呼ぶ。</summary>
     private void UpdateFilterOptions()
     {
-        var previouslySelected = GenreFilters.Where(g => g.IsSelected).Select(g => g.Name).ToHashSet();
+        RebuildFilterChips(GenreFilters, Works.SelectMany(w => SplitCsv(w.GenreTags).Concat(SplitCsv(w.UserTags))));
+        RebuildFilterChips(VoiceActorFilters, Works.SelectMany(w => SplitCsv(w.VoiceActors)));
+        RebuildOptions(CircleOptions, Works.Select(w => w.CircleName), SelectedCircle, v => SelectedCircle = v);
+    }
 
-        // DLsite由来のジャンルとユーザー独自タグを合わせて集計する
-        var genreCounts = Works
-            .SelectMany(w => SplitCsv(w.GenreTags).Concat(SplitCsv(w.UserTags)))
-            .GroupBy(g => g)
+    /// <summary>チップ型フィルタ(タグ/声優)の選択肢を集計し直す。選択状態は名前で引き継ぐ。</summary>
+    private void RebuildFilterChips(ObservableCollection<GenreFilterItem> target, IEnumerable<string> values)
+    {
+        var previouslySelected = target.Where(i => i.IsSelected).Select(i => i.Name).ToHashSet();
+
+        var counts = values
+            .GroupBy(v => v)
             .OrderByDescending(g => g.Count())
             .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase);
 
-        GenreFilters.Clear();
-        foreach (var group in genreCounts)
+        target.Clear();
+        foreach (var group in counts)
         {
-            GenreFilters.Add(new GenreFilterItem(group.Key, group.Count(), RefreshFilter)
+            target.Add(new GenreFilterItem(group.Key, group.Count(), RefreshFilter)
             {
                 IsSelected = previouslySelected.Contains(group.Key)
             });
         }
-
-        RebuildOptions(CircleOptions, Works.Select(w => w.CircleName), SelectedCircle, v => SelectedCircle = v);
-        RebuildOptions(VoiceActorOptions, Works.SelectMany(w => SplitCsv(w.VoiceActors)), SelectedVoiceActor, v => SelectedVoiceActor = v);
     }
 
     private static void RebuildOptions(ObservableCollection<string> target, IEnumerable<string> values,
@@ -229,6 +238,8 @@ public partial class LibraryViewModel : ObservableObject
     {
         if (obj is not VoiceWork work) return false;
 
+        if (FavoritesOnly && !work.IsFavorite) return false;
+
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
             var needle = SearchText.Trim();
@@ -250,8 +261,12 @@ public partial class LibraryViewModel : ObservableObject
         if (SelectedCircle != NoSelection
             && !string.Equals(work.CircleName, SelectedCircle, StringComparison.OrdinalIgnoreCase)) return false;
 
-        if (SelectedVoiceActor != NoSelection
-            && !SplitCsv(work.VoiceActors).Contains(SelectedVoiceActor, StringComparer.OrdinalIgnoreCase)) return false;
+        // 選択した声優が全員出演している作品のみ(タグと同じAND検索)
+        if (_activeVoiceActors.Count > 0)
+        {
+            var workActors = SplitCsv(work.VoiceActors);
+            if (!_activeVoiceActors.All(a => workActors.Contains(a, StringComparer.OrdinalIgnoreCase))) return false;
+        }
 
         // 販売日はDLsiteメタデータ取得済み作品のみ持つ。日付条件が指定されている場合、未取得(null)の作品は除外する
         if (_releaseFrom is { } from && (work.ReleaseDate is null || work.ReleaseDate < from)) return false;
@@ -411,6 +426,62 @@ public partial class LibraryViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task ToggleWorkFavoriteAsync(VoiceWork work)
+    {
+        work.IsFavorite = !work.IsFavorite;
+        try
+        {
+            await _database.SetWorkFavoriteAsync(work.Id, work.IsFavorite);
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"作品お気に入り状態の保存に失敗: work={work.Id}", ex);
+        }
+
+        // お気に入りのみ表示中に外した場合、一覧から即座に消す
+        if (FavoritesOnly) WorksView.Refresh();
+    }
+
+    // ---------- 詳細パネルからのクリックフィルタ ----------
+
+    /// <summary>作品詳細のサークル名クリック: そのサークルで絞り込む。</summary>
+    [RelayCommand]
+    private void FilterByCircle(string? circle)
+    {
+        if (string.IsNullOrWhiteSpace(circle)) return;
+        UpdateFilterOptions();
+        IsAdvancedSearchOpen = true;
+        var trimmed = circle.Trim();
+        SelectedCircle = CircleOptions.FirstOrDefault(c => string.Equals(c, trimmed, StringComparison.OrdinalIgnoreCase)) ?? NoSelection;
+    }
+
+    /// <summary>作品詳細の声優名クリック: その声優を選択状態に追加して絞り込む。</summary>
+    [RelayCommand]
+    private void FilterByVoiceActor(string? actor)
+    {
+        if (string.IsNullOrWhiteSpace(actor)) return;
+        UpdateFilterOptions();
+        IsAdvancedSearchOpen = true;
+        SelectChip(VoiceActorFilters, actor.Trim());
+    }
+
+    /// <summary>作品詳細のタグクリック: そのタグを選択状態に追加して絞り込む。</summary>
+    [RelayCommand]
+    private void FilterByTag(string? tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag)) return;
+        UpdateFilterOptions();
+        IsAdvancedSearchOpen = true;
+        SelectChip(GenreFilters, tag.Trim());
+    }
+
+    private static void SelectChip(ObservableCollection<GenreFilterItem> chips, string name)
+    {
+        var chip = chips.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (chip is not null) chip.IsSelected = true;
+    }
+
+    [RelayCommand]
     private void RefetchMetadata()
     {
         var work = WorkDetail.Work;
@@ -448,7 +519,7 @@ public partial class LibraryViewModel : ObservableObject
     public void EnqueuePendingMetadataFetches()
     {
         var pending = Works
-            .Where(w => w.Source == "DLsite"
+            .Where(w => (w.Source == "DLsite" || w.Source == "FANZA")
                 && !string.IsNullOrEmpty(w.ProductId)
                 && (string.IsNullOrEmpty(w.CircleName) || string.IsNullOrEmpty(w.ThumbnailPath)))
             .ToList();
@@ -462,11 +533,11 @@ public partial class LibraryViewModel : ObservableObject
         _log.Info($"メタデータ未取得の{pending.Count}件を取得キューに再投入");
     }
 
-    /// <summary>DLsiteの作品IDが判明している作品をバックグラウンドのメタデータ取得キューに投入する。
+    /// <summary>DLsite/FANZAの作品IDが判明している作品をバックグラウンドのメタデータ取得キューに投入する。
     /// サイト負荷軽減のため2秒間隔で1件ずつ順次処理する。</summary>
     private void EnqueueMetadataFetch(VoiceWork work)
     {
-        if (string.IsNullOrEmpty(work.ProductId) || work.Source != "DLsite") return;
+        if (string.IsNullOrEmpty(work.ProductId) || (work.Source != "DLsite" && work.Source != "FANZA")) return;
 
         _metadataQueue.Enqueue(work);
         MetadataQueueCount = _metadataQueue.Count;

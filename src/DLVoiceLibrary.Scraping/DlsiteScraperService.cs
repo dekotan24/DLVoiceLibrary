@@ -1,74 +1,50 @@
-using System.Globalization;
-using AngleSharp.Html.Parser;
+using DLsiteInfoGetter;
 
 namespace DLVoiceLibrary.Scraping;
 
+/// <summary>
+/// 作品メタデータの取得サービス。実際の取得はDLsiteInfoGetterライブラリに委譲する。
+/// 以前は自前のHTMLスクレイピングだったが、AI生成作品(aix)等の新レイアウトページでは
+/// サークル名等の要素が存在せず取得できなかったため、product.json APIベースのライブラリに統合した。
+/// FANZA同人(d_123456形式)にも対応する。
+/// </summary>
 public sealed class DlsiteScraperService : IDlsiteScraperService
 {
-    private readonly HttpClient _httpClient;
-
-    public DlsiteScraperService(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public async Task<DlsiteWorkMetadata?> FetchAsync(string productId, CancellationToken ct = default)
     {
         try
         {
-            var path = productId.StartsWith("VJ", StringComparison.OrdinalIgnoreCase) ? "pro" : "maniax";
-            var url = $"https://www.dlsite.com/{path}/work/=/product_id/{productId}.html";
-            var html = await _httpClient.GetStringAsync(url, ct).ConfigureAwait(false);
-            return ParseHtml(html);
+            if (IsFanzaId(productId))
+            {
+                var fanza = await Task.Run(() => FanzaInfo.GetInfo(productId), ct).ConfigureAwait(false);
+                return ToMetadata(fanza.Title, fanza.Circle, fanza.ImageUrl, fanza.VoiceActor, fanza.Genre,
+                    fanza.HasSellDate ? fanza.SellDate : null);
+            }
+
+            var dlsite = await Task.Run(() => DLsiteInfo.GetInfo(productId), ct).ConfigureAwait(false);
+            return ToMetadata(dlsite.Title, dlsite.Circle, dlsite.ImageUrl, dlsite.VoiceActor, dlsite.Genre,
+                dlsite.HasSellDate ? dlsite.SellDate : null);
         }
         catch
         {
+            // インターフェース契約: ネットワークエラー・作品なし・パース失敗等、あらゆる失敗時はnullを返す
             return null;
         }
     }
 
-    internal static DlsiteWorkMetadata? ParseHtml(string html)
+    /// <summary>FANZA同人の作品ID(d_123456形式)かどうかを判定する。</summary>
+    internal static bool IsFanzaId(string productId) =>
+        productId.StartsWith("d_", StringComparison.OrdinalIgnoreCase);
+
+    private static DlsiteWorkMetadata? ToMetadata(
+        string title, string circle, string imageUrl,
+        IReadOnlyList<string> voiceActors, IReadOnlyList<string> genres, DateTime? sellDate)
     {
-        try
-        {
-            var parser = new HtmlParser();
-            var doc = parser.ParseDocument(html);
-
-            var title = doc.QuerySelector("#work_name")?.TextContent.Trim();
-            if (string.IsNullOrEmpty(title))
-            {
-                return null;
-            }
-
-            var circle = doc.QuerySelector("span.maker_name > a")?.TextContent.Trim() ?? string.Empty;
-
-            var thumbnailUrl = doc.QuerySelector("meta[property='og:image']")?.GetAttribute("content") ?? string.Empty;
-            if (thumbnailUrl.StartsWith("//", StringComparison.Ordinal))
-            {
-                thumbnailUrl = "https:" + thumbnailUrl;
-            }
-
-            var voiceActors = doc.QuerySelectorAll("#work_outline tr > th:contains('声優') + td > a")
-                .Select(a => a.TextContent.Trim())
-                .ToList();
-
-            var genres = doc.QuerySelectorAll("#work_outline tr > th:contains('ジャンル') + td a")
-                .Select(a => a.TextContent.Trim())
-                .ToList();
-
-            DateTime? releaseDate = null;
-            var releaseDateText = doc.QuerySelector("#work_outline tr > th:contains('販売日') + td > a")?.TextContent.Trim();
-            if (!string.IsNullOrEmpty(releaseDateText)
-                && DateTime.TryParseExact(releaseDateText, "yyyy'年'MM'月'dd'日'", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
-            {
-                releaseDate = parsed;
-            }
-
-            return new DlsiteWorkMetadata(title, circle, thumbnailUrl, voiceActors, genres, releaseDate);
-        }
-        catch
+        // タイトルが取れていない場合は取得失敗として扱う(旧実装のParseHtmlと同じ契約)
+        if (string.IsNullOrEmpty(title))
         {
             return null;
         }
+        return new DlsiteWorkMetadata(title, circle, imageUrl, voiceActors, genres, sellDate);
     }
 }

@@ -86,6 +86,43 @@ public sealed class DatabaseServiceTests : IAsyncLifetime, IDisposable
     }
 
     [Fact]
+    public async Task SetWorkFavorite_PersistsAndRoundTrips()
+    {
+        var work = MakeWork(@"C:\voice\fav1");
+        var workId = await _db.InsertWorkAsync(work);
+
+        var beforeToggle = await _db.GetWorkByIdAsync(workId);
+        Assert.False(beforeToggle!.IsFavorite);
+
+        await _db.SetWorkFavoriteAsync(workId, true);
+        var afterOn = await _db.GetWorkByIdAsync(workId);
+        Assert.True(afterOn!.IsFavorite);
+
+        await _db.SetWorkFavoriteAsync(workId, false);
+        var afterOff = await _db.GetWorkByIdAsync(workId);
+        Assert.False(afterOff!.IsFavorite);
+    }
+
+    [Fact]
+    public async Task UpdateWork_PreservesIsFavorite()
+    {
+        var work = MakeWork(@"C:\voice\fav2");
+        await _db.InsertWorkAsync(work);
+        await _db.SetWorkFavoriteAsync(work.Id, true);
+
+        // メタデータ再取得の全項目UPDATEはis_favorite列に触れない(SetWorkFavoriteAsync専用)ため、
+        // モデル側の値に関係なくDB上のお気に入りは維持される
+        var fetched = await _db.GetWorkByIdAsync(work.Id);
+        fetched!.Title = "メタデータ更新後";
+        fetched.IsFavorite = false; // モデル側が古くてもDBは巻き戻らないことの確認
+        await _db.UpdateWorkAsync(fetched);
+
+        var final = await _db.GetWorkByIdAsync(work.Id);
+        Assert.True(final!.IsFavorite);
+        Assert.Equal("メタデータ更新後", final.Title);
+    }
+
+    [Fact]
     public async Task DeleteWork_CascadesToTracks()
     {
         var work = MakeWork(@"C:\voice\work3");

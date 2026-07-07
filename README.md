@@ -11,14 +11,18 @@
 - 作品フォルダの登録(個別追加 / 親フォルダ一括追加 / ドラッグ&ドロップ)
 - **フォルダ階層をそのまま保持したトラックツリー表示**(SEあり/なし等のバリアントフォルダも実構造どおり表示)
 - 複数の監視フォルダ: アプリ起動時・実行中に追加された作品フォルダを自動検出して登録
-- DLsiteメタデータ自動取得(タイトル / サークル / 声優 / ジャンル / 販売日 / サムネイル)
+- DLsite・FANZA同人メタデータ自動取得(タイトル / サークル / 声優 / ジャンル / 販売日 / サムネイル)
+  - DLsiteはAI生成作品(aix)等の新レイアウト作品にも対応(取得は[DLsiteInfoGetter](https://github.com/dekotan24/DLsiteInfoGetter)に統合)
+  - FANZA同人はフォルダ名の `d_123456` 形式のIDから自動判別
 - サムネイルのホバー拡大表示
 - 作品の一覧からの削除(ファイルは消さない。監視による自動再登録も抑止)
 - プロパティ編集(タイトル / サークル / 作品ID / 声優 / ユーザータグ / メモ)
 
 ### 検索
 - テキスト検索(タイトル / サークル / 声優 / タグ / RJ番号、`Ctrl+F`)
-- 詳細検索: タグ複数選択(AND) / サークル / 声優 / 販売日From-To
+- 詳細検索: タグ複数選択(AND) / 声優複数選択(AND) / サークル / 販売日From-To
+- **作品単位のお気に入り**(★)と「お気に入りのみ」絞り込み
+- **作品詳細のサークル名・声優名・タグをクリックしてそのまま絞り込み**(一覧カードのサークル名からも可)
 
 ### プレーヤー
 - MP3 / WAV / FLAC / OGG / M4A 対応(LibVLC)
@@ -63,12 +67,12 @@ dotnet test
 
 Visual Studio 2022以降、または .NET 8 SDK が必要です。
 
-> **Note**: `tests/DLVoiceLibrary.Scraping.Tests/Fixtures/` のDLsite実ページHTMLフィクスチャは
-> 著作物を含むためリポジトリに含めていません。該当テストはフィクスチャが存在しない環境では
-> 自動的にスキップされます。
+> **Note**: メタデータ取得に [DLsiteInfoGetter](https://github.com/dekotan24/DLsiteInfoGetter) を使用しています。
+> リポジトリを本リポジトリと同じ親フォルダにクローンしてください(相対パスでProjectReferenceしています)。
 
 ## 使用ライブラリ
 
+- [DLsiteInfoGetter](https://github.com/dekotan24/DLsiteInfoGetter) — DLsite/FANZA同人の作品情報取得
 - [LibVLCSharp](https://github.com/videolan/libvlcsharp) — 音声再生エンジン
 - [TagLibSharp](https://github.com/mono/taglib-sharp) — 音声ファイルのタグ読み取り
 - [AngleSharp](https://anglesharp.github.io/) — HTMLパース
