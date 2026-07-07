@@ -29,7 +29,7 @@
         <ToolTip x:Key="ThumbnailZoomToolTip" x:Shared="False"
                  Background="{StaticResource CrustBrush}" Padding="4"
                  ToolTipService.InitialShowDelay="350">
-            <Image Source="{Binding ThumbnailPath, Converter={StaticResource PathToImageConverter}}"
+            <Image Source="{Binding ThumbnailPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=0}"
                    MaxWidth="520" MaxHeight="520" Stretch="Uniform" />
         </ToolTip>
 
@@ -283,7 +283,7 @@
                                         ToolTipService.IsEnabled="{Binding ThumbnailPath, Converter={StaticResource NotEmptyToBoolConverter}}"
                                         ToolTipService.InitialShowDelay="350"
                                         Visibility="{Binding ThumbnailPath, Converter={StaticResource NullToVisibilityConverter}}">
-                                    <Image Source="{Binding ThumbnailPath, Converter={StaticResource PathToImageConverter}}"
+                                    <Image Source="{Binding ThumbnailPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=0}"
                                            Stretch="Uniform" />
                                 </Border>
                                 <TextBlock DockPanel.Dock="Top" Text="{Binding Work.Title}" FontWeight="Bold" FontSize="14"
