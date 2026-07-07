@@ -77,6 +77,22 @@
             <Setter Property="ContextMenu" Value="{StaticResource TrackContextMenu}" />
         </Style>
 
+        <!-- 詳細パネルのクリックフィルタリンク(サークル/声優/タグ)。ホバーで青+アンダーライン(DLGameManagerと同じ挙動)。
+             Foregroundをローカル属性で指定するとトリガーが効かない(依存プロパティ優先度)ため、ベース色もスタイル側で持つ。 -->
+        <Style x:Key="DetailLinkStyle" TargetType="Hyperlink">
+            <Setter Property="Foreground" Value="{StaticResource SubtextBrush}" />
+            <Setter Property="TextDecorations" Value="{x:Null}" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource BlueBrush}" />
+                    <Setter Property="TextDecorations" Value="Underline" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DetailTagLinkStyle" TargetType="Hyperlink" BasedOn="{StaticResource DetailLinkStyle}">
+            <Setter Property="Foreground" Value="{StaticResource OverlayBrush}" />
+        </Style>
+
         <HierarchicalDataTemplate x:Key="TrackTreeTemplate" DataType="{x:Type models:TrackTreeNode}"
                                    ItemsSource="{Binding Children}">
             <StackPanel Orientation="Horizontal" Margin="0,2"
@@ -291,7 +307,7 @@
                                 <!-- サークル名クリックでそのサークルに絞り込み -->
                                 <TextBlock DockPanel.Dock="Top" Margin="0,0,0,2"
                                            Visibility="{Binding Work.CircleName, Converter={StaticResource NullToVisibilityConverter}}">
-                                    <Hyperlink Foreground="{StaticResource SubtextBrush}" TextDecorations="None"
+                                    <Hyperlink Style="{StaticResource DetailLinkStyle}"
                                                ToolTip="このサークルの作品に絞り込む"
                                                Command="{Binding DataContext.Library.FilterByCircleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                CommandParameter="{Binding Work.CircleName}">
@@ -311,7 +327,7 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock FontSize="11" Margin="0,0,8,0">
-                                                    <Hyperlink Foreground="{StaticResource SubtextBrush}" TextDecorations="None"
+                                                    <Hyperlink Style="{StaticResource DetailLinkStyle}"
                                                                ToolTip="この声優の出演作品に絞り込む"
                                                                Command="{Binding DataContext.Library.FilterByVoiceActorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                CommandParameter="{Binding}">
@@ -332,7 +348,7 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock FontSize="11" Margin="0,0,8,2">
-                                                <Hyperlink Foreground="{StaticResource OverlayBrush}" TextDecorations="None"
+                                                <Hyperlink Style="{StaticResource DetailTagLinkStyle}"
                                                            ToolTip="このタグの作品に絞り込む"
                                                            Command="{Binding DataContext.Library.FilterByTagCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                            CommandParameter="{Binding}">
