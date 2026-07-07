@@ -25,6 +25,23 @@
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <conv:NotEmptyToBoolConverter x:Key="NotEmptyToBoolConverter" />
 
+        <!-- クリックフィルタリンク(サークル/声優/タグ)。ホバーで青+アンダーライン(DLGameManagerと同じ挙動)。
+             Foregroundをローカル属性で指定するとトリガーが効かない(依存プロパティ優先度)ため、ベース色もスタイル側で持つ。
+             StaticResource参照は前方参照不可のため、使用箇所(WorkCardTemplate等)より前に定義すること。 -->
+        <Style x:Key="DetailLinkStyle" TargetType="Hyperlink">
+            <Setter Property="Foreground" Value="{StaticResource SubtextBrush}" />
+            <Setter Property="TextDecorations" Value="{x:Null}" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource BlueBrush}" />
+                    <Setter Property="TextDecorations" Value="Underline" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DetailTagLinkStyle" TargetType="Hyperlink" BasedOn="{StaticResource DetailLinkStyle}">
+            <Setter Property="Foreground" Value="{StaticResource OverlayBrush}" />
+        </Style>
+
         <!-- サムネイルのホバー拡大表示(カードと詳細パネルで共用) -->
         <ToolTip x:Key="ThumbnailZoomToolTip" x:Shared="False"
                  Background="{StaticResource CrustBrush}" Padding="4"
@@ -59,8 +76,15 @@
                     </Border>
                     <TextBlock Text="{Binding Title}" TextWrapping="Wrap" Margin="0,8,0,2" FontWeight="SemiBold"
                                MaxHeight="42" TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="{Binding CircleName}" Foreground="{StaticResource SubtextBrush}" FontSize="12"
-                               TextTrimming="CharacterEllipsis" />
+                    <!-- サークル名クリックでそのサークルに絞り込み(詳細パネルのリンクと同じ挙動) -->
+                    <TextBlock FontSize="12" TextTrimming="CharacterEllipsis">
+                        <Hyperlink Style="{StaticResource DetailLinkStyle}"
+                                   ToolTip="このサークルの作品に絞り込む"
+                                   Command="{Binding DataContext.Library.FilterByCircleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   CommandParameter="{Binding CircleName}">
+                            <Run Text="{Binding CircleName, Mode=OneWay}" />
+                        </Hyperlink>
+                    </TextBlock>
                 </StackPanel>
             </Border>
         </DataTemplate>
@@ -75,22 +99,6 @@
 
         <Style x:Key="TrackTreeItemStyle" TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
             <Setter Property="ContextMenu" Value="{StaticResource TrackContextMenu}" />
-        </Style>
-
-        <!-- 詳細パネルのクリックフィルタリンク(サークル/声優/タグ)。ホバーで青+アンダーライン(DLGameManagerと同じ挙動)。
-             Foregroundをローカル属性で指定するとトリガーが効かない(依存プロパティ優先度)ため、ベース色もスタイル側で持つ。 -->
-        <Style x:Key="DetailLinkStyle" TargetType="Hyperlink">
-            <Setter Property="Foreground" Value="{StaticResource SubtextBrush}" />
-            <Setter Property="TextDecorations" Value="{x:Null}" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="{StaticResource BlueBrush}" />
-                    <Setter Property="TextDecorations" Value="Underline" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="DetailTagLinkStyle" TargetType="Hyperlink" BasedOn="{StaticResource DetailLinkStyle}">
-            <Setter Property="Foreground" Value="{StaticResource OverlayBrush}" />
         </Style>
 
         <HierarchicalDataTemplate x:Key="TrackTreeTemplate" DataType="{x:Type models:TrackTreeNode}"
