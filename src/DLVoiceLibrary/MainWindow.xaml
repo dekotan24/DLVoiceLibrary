@@ -48,6 +48,13 @@
                             <TextBlock Text="🎧" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"
                                        Foreground="{StaticResource OverlayBrush}"
                                        Visibility="{Binding ThumbnailPath, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}" />
+                            <Button Content="{Binding IsFavorite, Converter={StaticResource BoolToStarConverter}}"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,2,0"
+                                    FontSize="16" Padding="6,2" Background="#66000000" BorderThickness="0"
+                                    Foreground="{StaticResource YellowBrush}"
+                                    ToolTip="作品をお気に入りに追加/解除"
+                                    Command="{Binding DataContext.Library.ToggleWorkFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}" />
                         </Grid>
                     </Border>
                     <TextBlock Text="{Binding Title}" TextWrapping="Wrap" Margin="0,8,0,2" FontWeight="SemiBold"
@@ -156,6 +163,9 @@
                             Command="{Binding Library.AddFolderCommand}" />
                     <ToggleButton DockPanel.Dock="Right" Content="🔧 詳細検索" Margin="6,0,0,0" Padding="12,6"
                                   IsChecked="{Binding Library.IsAdvancedSearchOpen}" />
+                    <ToggleButton DockPanel.Dock="Right" Content="★ お気に入り" Margin="6,0,0,0" Padding="12,6"
+                                  ToolTip="お気に入りに登録した作品だけを表示"
+                                  IsChecked="{Binding Library.FavoritesOnly}" />
                     <TextBox x:Name="SearchBox"
                              Text="{Binding Library.SearchText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center"
@@ -172,10 +182,6 @@
                             <ComboBox ItemsSource="{Binding Library.CircleOptions}"
                                       SelectedItem="{Binding Library.SelectedCircle}"
                                       Width="220" Height="28" Margin="0,0,16,6" />
-                            <TextBlock Text="声優:" VerticalAlignment="Center" Margin="0,0,6,6" />
-                            <ComboBox ItemsSource="{Binding Library.VoiceActorOptions}"
-                                      SelectedItem="{Binding Library.SelectedVoiceActor}"
-                                      Width="180" Height="28" Margin="0,0,16,6" />
                             <TextBlock Text="販売日:" VerticalAlignment="Center" Margin="0,0,6,6" />
                             <TextBox Text="{Binding Library.ReleaseDateFromText, UpdateSourceTrigger=PropertyChanged, Delay=400}"
                                      Width="110" Margin="0,0,4,6" Tag="2024/01/01" />
@@ -185,8 +191,25 @@
                             <Button Content="条件をクリア" Padding="10,4" Margin="0,0,0,6"
                                     Command="{Binding Library.ClearAdvancedSearchCommand}" />
                         </WrapPanel>
-                        <TextBlock Text="タグ(選択したタグを全て含む作品に絞り込み):"
+                        <TextBlock Text="声優(選択した声優が全員出演する作品に絞り込み):"
                                    Foreground="{StaticResource SubtextBrush}" FontSize="11" Margin="0,2,0,4" />
+                        <ScrollViewer MaxHeight="96" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding Library.VoiceActorFilters}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ToggleButton Content="{Binding Display}" IsChecked="{Binding IsSelected}"
+                                                      FontSize="11" Margin="0,0,6,6" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        <TextBlock Text="タグ(選択したタグを全て含む作品に絞り込み):"
+                                   Foreground="{StaticResource SubtextBrush}" FontSize="11" Margin="0,6,0,4" />
                         <ScrollViewer MaxHeight="96" VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding Library.GenreFilters}">
                                 <ItemsControl.ItemsPanel>
@@ -265,17 +288,67 @@
                                 </Border>
                                 <TextBlock DockPanel.Dock="Top" Text="{Binding Work.Title}" FontWeight="Bold" FontSize="14"
                                            TextWrapping="Wrap" Margin="0,0,0,4" />
-                                <TextBlock DockPanel.Dock="Top" Text="{Binding Work.CircleName}"
-                                           Foreground="{StaticResource SubtextBrush}" Margin="0,0,0,2" />
-                                <TextBlock DockPanel.Dock="Top" Text="{Binding Work.VoiceActors, StringFormat='CV: {0}'}"
-                                           Foreground="{StaticResource SubtextBrush}" FontSize="11" Margin="0,0,0,2"
-                                           TextWrapping="Wrap"
-                                           Visibility="{Binding Work.VoiceActors, Converter={StaticResource NullToVisibilityConverter}}" />
-                                <TextBlock DockPanel.Dock="Top" Text="{Binding Work.GenreTags}"
-                                           Foreground="{StaticResource OverlayBrush}" FontSize="11" Margin="0,0,0,8"
-                                           TextWrapping="Wrap" />
+                                <!-- サークル名クリックでそのサークルに絞り込み -->
+                                <TextBlock DockPanel.Dock="Top" Margin="0,0,0,2"
+                                           Visibility="{Binding Work.CircleName, Converter={StaticResource NullToVisibilityConverter}}">
+                                    <Hyperlink Foreground="{StaticResource SubtextBrush}" TextDecorations="None"
+                                               ToolTip="このサークルの作品に絞り込む"
+                                               Command="{Binding DataContext.Library.FilterByCircleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                               CommandParameter="{Binding Work.CircleName}">
+                                        <Run Text="{Binding Work.CircleName, Mode=OneWay}" />
+                                    </Hyperlink>
+                                </TextBlock>
+                                <!-- 声優名クリックでその声優に絞り込み -->
+                                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,2"
+                                           Visibility="{Binding Work.VoiceActors, Converter={StaticResource NullToVisibilityConverter}}">
+                                    <TextBlock Text="CV: " Foreground="{StaticResource SubtextBrush}" FontSize="11" />
+                                    <ItemsControl ItemsSource="{Binding Work.VoiceActorList}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock FontSize="11" Margin="0,0,8,0">
+                                                    <Hyperlink Foreground="{StaticResource SubtextBrush}" TextDecorations="None"
+                                                               ToolTip="この声優の出演作品に絞り込む"
+                                                               Command="{Binding DataContext.Library.FilterByVoiceActorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                               CommandParameter="{Binding}">
+                                                        <Run Text="{Binding Mode=OneWay}" />
+                                                    </Hyperlink>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </WrapPanel>
+                                <!-- タグクリックでそのタグに絞り込み -->
+                                <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Work.GenreTagList}" Margin="0,0,0,8">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock FontSize="11" Margin="0,0,8,2">
+                                                <Hyperlink Foreground="{StaticResource OverlayBrush}" TextDecorations="None"
+                                                           ToolTip="このタグの作品に絞り込む"
+                                                           Command="{Binding DataContext.Library.FilterByTagCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                           CommandParameter="{Binding}">
+                                                    <Run Text="{Binding Mode=OneWay}" />
+                                                </Hyperlink>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                                 <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                                     <Button Content="▶ 全曲再生" Padding="10,4" Margin="0,0,6,6" Click="OnPlayAllClick" />
+                                    <Button Content="{Binding Work.IsFavorite, Converter={StaticResource BoolToStarConverter}}"
+                                            Padding="10,4" Margin="0,0,6,6" Foreground="{StaticResource YellowBrush}"
+                                            ToolTip="作品をお気に入りに追加/解除"
+                                            Command="{Binding DataContext.Library.ToggleWorkFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding Work}" />
                                     <Button Content="🔄 再取得" Padding="10,4" Margin="0,0,6,6"
                                             Command="{Binding DataContext.Library.RefetchMetadataCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     <Button Content="📂 フォルダを開く" Padding="10,4" Margin="0,0,6,6"

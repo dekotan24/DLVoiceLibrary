@@ -13,6 +13,7 @@ public interface IDatabaseService
     Task<long> InsertWorkAsync(VoiceWork work, CancellationToken ct = default);
     Task UpdateWorkAsync(VoiceWork work, CancellationToken ct = default);
     Task DeleteWorkAsync(long workId, CancellationToken ct = default);
+    Task SetWorkFavoriteAsync(long workId, bool isFavorite, CancellationToken ct = default);
 
     // Tracks
     Task<List<Track>> GetTracksByWorkIdAsync(long workId, CancellationToken ct = default);
